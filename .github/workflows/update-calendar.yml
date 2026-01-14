@@ -1,0 +1,33 @@
+name: Update Calendar
+
+on:
+  schedule:
+    # 每年1月1日和7月1日自动运行
+    - cron: '0 0 1 1,7 *'
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: pip install zhdate
+      
+      - name: Generate calendar
+        run: python generate_calendar.py
+      
+      - name: Commit and push
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add buyudaren_calendar.ics
+          git diff --staged --quiet || git commit -m "Auto update calendar $(date +%Y-%m-%d)"
+          git push
