@@ -2,9 +2,12 @@ name: Update Calendar
 
 on:
   schedule:
-    # 每年1月1日和7月1日自动运行
-    - cron: '0 0 1 1,7 *'
+    # 每月1日自动运行（保持仓库活跃）
+    - cron: '0 0 1 * *'
   workflow_dispatch:  # 允许手动触发
+
+permissions:
+  contents: write
 
 jobs:
   update:

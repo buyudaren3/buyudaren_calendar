@@ -31,4 +31,4 @@ https://raw.githubusercontent.com/buyudaren3/buyudaren_calendar/main/buyudaren_c
 
 ## 自动更新
 
-GitHub Actions 会在每年 1月1日 和 7月1日 自动运行脚本更新日历。
+GitHub Actions 会在每月1日自动运行脚本更新日历。
