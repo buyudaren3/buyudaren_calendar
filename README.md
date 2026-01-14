@@ -4,7 +4,13 @@
 
 ## 订阅地址
 
-将此仓库推送到 GitHub 后，在 iPhone 上订阅：
+推荐使用 GitHub Pages 地址（国内可直接访问）：
+
+```
+https://buyudaren3.github.io/buyudaren_calendar/buyudaren_calendar.ics
+```
+
+备用地址（需要代理）：
 
 ```
 https://raw.githubusercontent.com/buyudaren3/buyudaren_calendar/main/buyudaren_calendar.ics
