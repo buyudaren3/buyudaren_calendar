@@ -7,7 +7,7 @@
 将此仓库推送到 GitHub 后，在 iPhone 上订阅：
 
 ```
-https://raw.githubusercontent.com/你的用户名/你的仓库名/main/buyudaren_calendar.ics
+https://raw.githubusercontent.com/buyudaren3/buyudaren_calendar/main/buyudaren_calendar.ics
 ```
 
 ## iPhone 订阅步骤
