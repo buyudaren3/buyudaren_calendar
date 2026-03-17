@@ -3,7 +3,7 @@
 生成包含中国农历节日和西方节日的 ICS 日历文件
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from zhdate import ZhDate
 import uuid
 
@@ -14,6 +14,12 @@ def lunar_to_solar(year, month, day):
         return zh.to_datetime().date()
     except:
         return None
+
+def get_qingming_date(year):
+    """计算清明节日期（21世纪公式）"""
+    y = year - 2000
+    day = int(4.81 + 0.242194 * y) - (y // 4)
+    return day  # 返回4月的第几天
 
 def get_nth_weekday(year, month, weekday, n):
     """获取某月第n个星期几 (weekday: 0=周一, 6=周日)"""
@@ -54,13 +60,22 @@ END:VEVENT
 
 def generate_calendar():
     events = []
+    current_year = datetime.now().year
     
     # 固定公历节日（每年重复）
     fixed_holidays = [
+        ("元旦", 1, 1, "C1A2B3D4-E5F6-4789-ABCD-100000000001"),
         ("情人节", 2, 14, "B40484B8-EC47-423C-9FE2-ED8045510CD9"),
+        ("妇女节", 3, 8, "C1A2B3D4-E5F6-4789-ABCD-100000000002"),
         ("植树节", 3, 12, "86B5610A-0ED1-45AA-AC5F-3986F5D0DCB3"),
         ("愚人节", 4, 1, "6CAE4024-D0F2-4644-B06C-1426082A5102"),
+        ("劳动节", 5, 1, "C1A2B3D4-E5F6-4789-ABCD-100000000003"),
+        ("青年节", 5, 4, "C1A2B3D4-E5F6-4789-ABCD-100000000004"),
+        ("儿童节", 6, 1, "C1A2B3D4-E5F6-4789-ABCD-100000000005"),
+        ("建党节", 7, 1, "C1A2B3D4-E5F6-4789-ABCD-100000000006"),
+        ("建军节", 8, 1, "C1A2B3D4-E5F6-4789-ABCD-100000000007"),
         ("教师节", 9, 10, "AA61B842-5291-44AF-8084-1087FF739388"),
+        ("国庆节", 10, 1, "C1A2B3D4-E5F6-4789-ABCD-100000000008"),
         ("万圣夜", 10, 31, "A6084884-0DC7-48B7-AA29-B2CFCF8167EA"),
         ("万圣节", 11, 1, "EE89587A-49B3-4F97-91AB-D667026AA81C"),
         ("平安夜", 12, 24, "448ADCB0-601C-4A25-A2BA-97C1ABB1BCEA"),
@@ -81,6 +96,12 @@ def generate_calendar():
     events.append(generate_recurring_event("感恩节", 11, 28, "283FBA16-0DB1-49E5-9624-EA2DEA0C6C14",
                                            "RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=4TH"))
     
+    # 清明节（节气，逐年计算）
+    for year in range(current_year, current_year + 5):
+        qm_day = get_qingming_date(year)
+        qm_date = date(year, 4, qm_day)
+        events.append(generate_event("清明节", qm_date, "QINGMING-UID-BASE", year))
+
     # 农历节日（需要逐年计算）
     lunar_holidays = [
         ("腊八节", 12, 8, "BAA01739-384A-46E8-9938-2AA27831A94C"),
@@ -97,28 +118,24 @@ def generate_calendar():
         ("重阳节", 9, 9, "CHONGYANG-2024-2030"),
     ]
     
-    current_year = datetime.now().year
     for year in range(current_year, current_year + 5):
         for name, lunar_month, lunar_day, uid_base in lunar_holidays:
-            # 农历节日在下一年的公历年份
-            lunar_year = year if lunar_month <= 6 else year
-            if lunar_month == 12:  # 腊月节日属于下一年春节前
-                lunar_year = year
-            elif lunar_month <= 2:  # 正月二月节日
-                lunar_year = year
+            # 农历腊月（12月）的节日在公历上位于下一年年初，
+            # 即农历年Y的腊月 = 公历年Y+1，因此查公历year年的腊月节日需用农历year-1年
+            lunar_year = year - 1 if lunar_month == 12 else year
             
             # 特殊处理除夕（可能是腊月29或30）
             if name == "除夕":
                 # 先尝试腊月30
-                date = lunar_to_solar(year, 12, 30)
-                if date is None:
+                solar_date = lunar_to_solar(lunar_year, 12, 30)
+                if solar_date is None:
                     # 如果没有腊月30，用腊月29
-                    date = lunar_to_solar(year, 12, 29)
+                    solar_date = lunar_to_solar(lunar_year, 12, 29)
             else:
-                date = lunar_to_solar(year, lunar_month, lunar_day)
+                solar_date = lunar_to_solar(lunar_year, lunar_month, lunar_day)
             
-            if date:
-                events.append(generate_event(name, date, uid_base, year))
+            if solar_date:
+                events.append(generate_event(name, solar_date, uid_base, year))
     
     # 生成完整日历
     calendar = f"""BEGIN:VCALENDAR
